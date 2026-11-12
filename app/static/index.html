@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobSphere — Modern Job Tracking & Application Pipeline</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=2">
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-light: #38bdf8;
+      --primary-border: #7dd3fc;
+      --primary-ultralight: #e0f2fe;
+      --primary-bg: #f0f9ff;
+      --primary-ring: rgba(56, 189, 248, 0.45);
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #bae6fd;
+      --slate-100: #e0f2fe;
+      --slate-50: #f0f9ff;
+      --white: #ffffff;
+      --success-bg: #ecfdf5;
+      --success-text: #047857;
+      --success-border: #a7f3d0;
+      --warning-bg: #fffbeb;
+      --warning-text: #b45309;
+      --warning-border: #fde68a;
+      --danger-bg: #fef2f2;
+      --danger-text: #b91c1c;
+      --danger-border: #fecaca;
+      --purple-bg: #faf5ff;
+      --purple-text: #7e22ce;
+      --purple-border: #e9d5ff;
+      --shadow-sm: 0 2px 6px 0 rgba(2, 132, 199, 0.08);
+      --shadow-md: 0 6px 14px -2px rgba(2, 132, 199, 0.12), 0 2px 6px -2px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 14px 25px -4px rgba(2, 132, 199, 0.16), 0 4px 10px -4px rgba(15, 23, 42, 0.06);
+      --shadow-glow: 0 0 24px rgba(56, 189, 248, 0.35);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 40%, #f8fafc 100%);
+      background-attachment: fixed;
+      color: var(--slate-900);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 2px solid #bae6fd;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.12);
+    }
+    .nav-container { max-width: 1280px; margin: 0 auto; padding: 0.9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; cursor: pointer; }
+    .brand-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: var(--white); border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow-glow);
+    }
+    .brand-title { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: var(--slate-900); }
+    .brand-title span { color: var(--primary); }
+    .nav-menu { display: flex; align-items: center; gap: 0.5rem; }
+    .nav-link {
+      padding: 0.55rem 1rem; border-radius: var(--radius-sm); font-size: 0.92rem; font-weight: 600;
+      color: var(--slate-600); text-decoration: none; cursor: pointer; transition: all 0.15s ease;
+      display: inline-flex; align-items: center; gap: 0.45rem;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--primary); background-color: #e0f2fe; box-shadow: inset 0 0 0 1px #7dd3fc; }
+    .nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .role-badge {
+      display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.7rem;
+      border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+    }
+    .role-badge.admin { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .role-badge.applicant { background-color: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.6rem 1.2rem; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: var(--white); border-color: #0284c7; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.28);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+      box-shadow: 0 6px 14px rgba(2, 132, 199, 0.38); transform: translateY(-1px);
+    }
+    .btn-outline { background: var(--white); color: var(--primary); border: 1.5px solid #38bdf8; }
+    .btn-outline:hover:not(:disabled) { background-color: #e0f2fe; border-color: var(--primary); }
+    .btn-secondary { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+    .btn-secondary:hover:not(:disabled) { background: #e0f2fe; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+    .btn-danger:hover:not(:disabled) { background: #fee2e2; }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.82rem; border-radius: var(--radius-sm); }
+    .hero-banner {
+      background: linear-gradient(135deg, #bae6fd 0%, #e0f2fe 50%, #f0f9ff 100%);
+      border-bottom: 2px solid #7dd3fc; padding: 3.25rem 1.5rem 2.75rem; text-align: center; position: relative; overflow: hidden;
+    }
+    .hero-content { max-width: 800px; margin: 0 auto; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 1rem;
+      background-color: var(--white); border: 1.5px solid #38bdf8; color: #0284c7;
+      border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 700; margin-bottom: 1rem; box-shadow: var(--shadow-sm);
+    }
+    .hero-title { font-size: 2.6rem; font-weight: 800; color: var(--slate-900); line-height: 1.2; letter-spacing: -0.03em; margin-bottom: 1rem; }
+    .hero-title span { color: #0284c7; background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-subtitle { font-size: 1.1rem; color: var(--slate-700); max-width: 620px; margin: 0 auto 1.75rem; }
+    .search-filter-card {
+      max-width: 1000px; margin: -1.75rem auto 2.5rem; background: var(--white); border: 2px solid #7dd3fc;
+      border-radius: var(--radius-lg); padding: 1.35rem; box-shadow: var(--shadow-lg), 0 0 28px rgba(56, 189, 248, 0.18);
+      display: flex; flex-direction: column; gap: 1rem; position: relative; z-index: 10;
+    }
+    .search-input-wrapper {
+      display: flex; align-items: center; background: #f0f9ff; border: 1.5px solid #bae6fd;
+      border-radius: var(--radius-md); padding: 0.6rem 1rem; gap: 0.75rem; transition: all 0.2s;
+    }
+    .search-input-wrapper:focus-within { background: var(--white); border-color: #0284c7; box-shadow: 0 0 0 3px var(--primary-ring); }
+    .search-input-wrapper input { border: none; background: transparent; width: 100%; font-size: 0.95rem; color: var(--slate-900); outline: none; }
+    .filters-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .select-filter {
+      padding: 0.55rem 0.9rem; border-radius: var(--radius-md); border: 1.5px solid #bae6fd;
+      background: #f0f9ff; color: #0369a1; font-size: 0.86rem; font-weight: 600; outline: none; cursor: pointer; transition: all 0.15s;
+    }
+    .select-filter:focus, .select-filter:hover { border-color: #38bdf8; background: var(--white); box-shadow: 0 0 0 3px var(--primary-ring); }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 1.5rem 3rem; width: 100%; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .section-title { font-size: 1.55rem; font-weight: 800; color: var(--slate-900); }
+    .section-subtitle { font-size: 0.92rem; color: var(--slate-600); }
+    .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem; }
+    .job-card {
+      background: var(--white); border: 1.5px solid #bae6fd; border-top: 5px solid #38bdf8;
+      border-radius: var(--radius-lg); padding: 1.5rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: var(--shadow-sm); cursor: pointer;
+    }
+    .job-card:hover { transform: translateY(-4px); border-color: #38bdf8; border-top-color: #0284c7; box-shadow: var(--shadow-lg); }
+    .job-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .job-title { font-size: 1.2rem; font-weight: 700; color: var(--slate-900); line-height: 1.3; }
+    .job-department { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #0284c7; margin-bottom: 0.35rem; }
+    .job-meta-pills { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-bottom: 1rem; }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.28rem 0.65rem;
+      background-color: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 600;
+    }
+    .meta-pill.salary { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0369a1; border-color: #7dd3fc; font-weight: 700; }
+    .job-description-preview { font-size: 0.9rem; color: var(--slate-600); line-height: 1.55; margin-bottom: 1.25rem; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .job-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid #e0f2fe; gap: 0.75rem; }
+    .job-date { font-size: 0.78rem; color: var(--slate-500); font-weight: 500; }
+    .status-badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; }
+    .status-badge.submitted { background-color: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .status-badge.under-review { background-color: var(--warning-bg); color: var(--warning-text); border: 1px solid var(--warning-border); }
+    .status-badge.interview-scheduled { background-color: var(--purple-bg); color: var(--purple-text); border: 1px solid var(--purple-border); }
+    .status-badge.offer-extended { background-color: var(--success-bg); color: var(--success-text); border: 1px solid var(--success-border); }
+    .status-badge.rejected { background-color: var(--danger-bg); color: var(--danger-text); border: 1px solid var(--danger-border); }
+    .status-badge.open { background-color: #e0f2fe; color: #0284c7; border: 1px solid #7dd3fc; }
+    .status-badge.closed { background-color: #f1f5f9; color: var(--slate-600); border: 1px solid #cbd5e1; }
+    .modal-backdrop { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.55); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.25s ease; }
+    .modal-backdrop.active { opacity: 1; visibility: visible; }
+    .modal-container { background: var(--white); border-radius: var(--radius-lg); box-shadow: 0 25px 50px -12px rgba(2, 132, 199, 0.25); width: 100%; max-width: 650px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #7dd3fc; }
+    .modal-backdrop.active .modal-container { transform: scale(1); }
+    .modal-header { padding: 1.25rem 1.5rem; border-bottom: 1.5px solid #bae6fd; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); }
+    .modal-title { font-size: 1.25rem; font-weight: 800; color: var(--slate-900); }
+    .modal-close { background: var(--white); border: 1px solid #bae6fd; width: 32px; height: 32px; font-size: 1.35rem; color: #0284c7; cursor: pointer; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .modal-close:hover { background: #e0f2fe; color: #0369a1; }
+    .modal-body { padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 1.5px solid #e0f2fe; background: #f0f9ff; display: flex; justify-content: flex-end; gap: 0.75rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-label { font-size: 0.85rem; font-weight: 700; color: var(--slate-700); }
+    .form-input, .form-textarea, .form-select { width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid #bae6fd; border-radius: var(--radius-md); font-size: 0.9rem; color: var(--slate-900); background-color: #f8fafc; transition: all 0.15s; font-family: inherit; }
+    .form-textarea { min-height: 100px; resize: vertical; }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; background-color: var(--white); border-color: #0284c7; box-shadow: 0 0 0 3px var(--primary-ring); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .file-dropzone { border: 2px dashed #38bdf8; background-color: #f0f9ff; border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .file-dropzone:hover { border-color: #0284c7; background-color: #e0f2fe; }
+    .file-dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .file-dropzone-icon { color: #0284c7; margin-bottom: 0.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--white); border: 1.5px solid #bae6fd; border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 1rem; border-left: 5px solid #38bdf8; }
+    .stat-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0284c7; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+    .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--slate-900); line-height: 1.1; }
+    .stat-label { font-size: 0.85rem; font-weight: 600; color: var(--slate-500); }
+    .table-responsive { width: 100%; overflow-x: auto; background: var(--white); border: 1.5px solid #bae6fd; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    .data-table th { background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 100%); padding: 0.9rem 1rem; font-weight: 700; color: #0369a1; border-bottom: 2px solid #bae6fd; white-space: nowrap; }
+    .data-table td { padding: 1rem; border-bottom: 1px solid #e0f2fe; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background-color: #f0f9ff; }
+    .tracker-stepper { display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0; position: relative; }
+    .tracker-stepper::before { content: ''; position: absolute; top: 18px; left: 20px; right: 20px; height: 3px; background-color: #bae6fd; z-index: 1; }
+    .step-node { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+    .step-circle { width: 36px; height: 36px; border-radius: var(--radius-full); background: var(--white); border: 2px solid #7dd3fc; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; color: #0284c7; transition: all 0.2s; }
+    .step-node.completed .step-circle { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); border-color: #0284c7; color: var(--white); }
+    .step-node.current .step-circle { background: #e0f2fe; border-color: #0284c7; color: #0284c7; box-shadow: 0 0 0 4px var(--primary-ring); }
+    .step-label { font-size: 0.75rem; font-weight: 700; color: var(--slate-700); text-align: center; max-width: 90px; }
+    .demo-pill-bar { background: linear-gradient(90deg, #bae6fd 0%, #e0f2fe 50%, #bae6fd 100%); border-bottom: 1px solid #7dd3fc; padding: 0.45rem 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-size: 0.82rem; color: #0369a1; flex-wrap: wrap; }
+    .demo-chip { background: var(--white); border: 1.5px solid #38bdf8; padding: 0.2rem 0.75rem; border-radius: var(--radius-full); font-weight: 700; cursor: pointer; color: #0284c7; display: inline-flex; align-items: center; gap: 0.35rem; transition: all 0.15s; box-shadow: 0 1px 2px rgba(2, 132, 199, 0.1); }
+    .demo-chip:hover { background: #0284c7; color: var(--white); border-color: #0284c7; }
+    .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; z-index: 200; }
+    .toast { background: var(--white); border-radius: var(--radius-md); padding: 0.9rem 1.25rem; box-shadow: var(--shadow-lg); border: 1px solid #bae6fd; border-left: 5px solid #0284c7; display: flex; align-items: center; gap: 0.75rem; min-width: 300px; max-width: 420px; animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1); font-size: 0.9rem; font-weight: 500; }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error { border-left-color: #ef4444; }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 1.85rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .search-filter-card { margin-top: 0; }
+      .job-grid { grid-template-columns: 1fr; }
+      .tracker-stepper { flex-wrap: wrap; gap: 1rem; }
+      .tracker-stepper::before { display: none; }
+    }
+  </style>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Demo Accounts & Quick Switch Bar -->
+  <div class="demo-pill-bar">
+    <span>💡 <strong>Quick Demo Access:</strong></span>
+    <button class="demo-chip" onclick="quickLogin('admin@jobtrack.com', 'Admin123!')">
+      <i data-lucide="shield-check" style="width:14px;height:14px;"></i> Login as Admin
+    </button>
+    <button class="demo-chip" onclick="quickLogin('applicant@example.com', 'User123!')">
+      <i data-lucide="user" style="width:14px;height:14px;"></i> Login as Applicant
+    </button>
+    <span id="activeUserNotice" style="margin-left: auto; font-size: 0.8rem; font-weight: 500;"></span>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" onclick="navigate('jobs')">
+        <div class="brand-icon">
+          <i data-lucide="briefcase" style="width:22px;height:22px;"></i>
+        </div>
+        <div class="brand-title">Job<span>Sphere</span></div>
+      </div>
+
+      <nav class="nav-menu">
+        <a class="nav-link active" id="nav-jobs" onclick="navigate('jobs')">
+          <i data-lucide="compass" style="width:16px;height:16px;"></i> Browse Jobs
+        </a>
+        <a class="nav-link" id="nav-my-apps" style="display:none;" onclick="navigate('my-applications')">
+          <i data-lucide="file-check-2" style="width:16px;height:16px;"></i> My Applications
+        </a>
+        <a class="nav-link" id="nav-admin" style="display:none;" onclick="navigate('admin')">
+          <i data-lucide="layout-dashboard" style="width:16px;height:16px;"></i> Admin Dashboard
+        </a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Logged Out View -->
+        <div id="authLoggedOut" style="display:flex; gap:0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="openAuthModal('login')">Sign In</button>
+          <button class="btn btn-primary btn-sm" onclick="openAuthModal('register')">Create Account</button>
+        </div>
+
+        <!-- Logged In View -->
+        <div id="authLoggedIn" style="display:none; align-items:center; gap:0.75rem;">
+          <div style="text-align: right; line-height: 1.2;">
+            <div id="navUserName" style="font-weight: 600; font-size: 0.88rem; color: var(--slate-900);"></div>
+            <div id="navUserRole"></div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="logout()" title="Log out">
+            <i data-lucide="log-out" style="width:15px;height:15px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-banner" id="heroSection">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <i data-lucide="sparkles" style="width:14px;height:14px;"></i> Light Blue ATS & Job Platform
+      </div>
+      <h1 class="hero-title">Connecting Talent with <span>Career Opportunities</span></h1>
+      <p class="hero-subtitle">
+        Search open positions, submit applications with resume attachments, and track candidate progress through every stage.
+      </p>
+    </div>
+  </section>
+
+  <!-- Search & Filter Card (Shown on Browse Jobs view) -->
+  <div class="search-filter-card" id="searchFilterBar">
+    <div class="search-input-wrapper">
+      <i data-lucide="search" style="color:var(--primary);width:18px;height:18px;"></i>
+      <input type="text" id="searchInput" placeholder="Search by job title, department, skills, or keywords..." oninput="handleSearchInput()">
+    </div>
+    <div class="filters-row">
+      <select class="select-filter" id="filterDepartment" onchange="fetchJobs()">
+        <option value="">All Departments</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Infrastructure & Cloud">Infrastructure & Cloud</option>
+        <option value="Product & Design">Product & Design</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Sales">Sales</option>
+        <option value="Customer Success">Customer Success</option>
+      </select>
+
+      <select class="select-filter" id="filterJobType" onchange="fetchJobs()">
+        <option value="">All Job Types</option>
+        <option value="Full-time">Full-time</option>
+        <option value="Part-time">Part-time</option>
+        <option value="Remote">Remote</option>
+        <option value="Contract">Contract</option>
+        <option value="Internship">Internship</option>
+      </select>
+
+      <select class="select-filter" id="filterExperience" onchange="fetchJobs()">
+        <option value="">All Experience Levels</option>
+        <option value="Entry Level">Entry Level</option>
+        <option value="Mid Level">Mid Level</option>
+        <option value="Senior">Senior</option>
+        <option value="Lead">Lead</option>
+      </select>
+
+      <button class="btn btn-secondary btn-sm" onclick="resetFilters()" style="margin-left:auto;">
+        <i data-lucide="rotate-ccw" style="width:14px;height:14px;"></i> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Views Container -->
+  <main class="container">
+
+    <!-- VIEW 1: Browse Jobs (Job Board) -->
+    <div id="view-jobs" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Open Positions</h2>
+          <p class="section-subtitle" id="jobCountNotice">Showing active job opportunities</p>
+        </div>
+        <div id="adminJobActionBtn" style="display:none;">
+          <button class="btn btn-primary" onclick="openCreateJobModal()">
+            <i data-lucide="plus-circle" style="width:18px;height:18px;"></i> Post New Job Opening
+          </button>
+        </div>
+      </div>
+
+      <div class="job-grid" id="jobsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- VIEW 2: My Applications (Applicant Portal) -->
+    <div id="view-my-applications" class="view-panel" style="display:none;">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">My Job Applications</h2>
+          <p class="section-subtitle">Real-time status tracking for positions you have applied to</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="fetchMyApplications()">
+          <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i> Refresh
+        </button>
+      </div>
+
+      <div id="myApplicationsContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- VIEW 3: Admin Dashboard (ATS Pipeline & Management) -->
+    <div id="view-admin" class="view-panel" style="display:none;">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Admin ATS Portal</h2>
+          <p class="section-subtitle">Manage open positions, review applicants, and move candidates through the hiring pipeline</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateJobModal()">
+          <i data-lucide="plus-circle" style="width:18px;height:18px;"></i> Post New Job Opening
+        </button>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="stats-grid" id="adminStatsGrid">
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="briefcase"></i></div>
+          <div>
+            <div class="stat-value" id="statTotalJobs">0</div>
+            <div class="stat-label">Active Job Openings</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="users"></i></div>
+          <div>
+            <div class="stat-value" id="statTotalApps">0</div>
+            <div class="stat-label">Total Applications</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="clock"></i></div>
+          <div>
+            <div class="stat-value" id="statInReview">0</div>
+            <div class="stat-label">Under Review</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+          <div>
+            <div class="stat-value" id="statOffered">0</div>
+            <div class="stat-label">Offers Extended</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Tab Switcher -->
+      <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem; border-bottom:1px solid var(--slate-200); padding-bottom:0.75rem;">
+        <button class="btn btn-outline btn-sm" id="adminTabAppsBtn" onclick="switchAdminTab('applications')">
+          <i data-lucide="user-check" style="width:15px;height:15px;"></i> Candidate Applications
+        </button>
+        <button class="btn btn-secondary btn-sm" id="adminTabJobsBtn" onclick="switchAdminTab('jobs')">
+          <i data-lucide="folder-kanban" style="width:15px;height:15px;"></i> Manage Postings
+        </button>
+      </div>
+
+      <!-- Admin Tab 1: Applications Pipeline -->
+      <div id="adminTabApps">
+        <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap;">
+          <input type="text" id="adminAppSearch" class="form-input" style="max-width:280px;" placeholder="Search candidate or job..." oninput="fetchAdminApplications()">
+          <select id="adminAppStatusFilter" class="select-filter" onchange="fetchAdminApplications()">
+            <option value="">All Statuses</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Interview Scheduled">Interview Scheduled</option>
+            <option value="Offer Extended">Offer Extended</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+          <select id="adminAppJobFilter" class="select-filter" onchange="fetchAdminApplications()">
+            <option value="">All Job Postings</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Target Job</th>
+                <th>Applied Date</th>
+                <th>Status</th>
+                <th>Resume</th>
+                <th>Evaluation & Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminAppsTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Tab 2: Manage Job Postings -->
+      <div id="adminTabJobs" style="display:none;">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Job Title</th>
+                <th>Department</th>
+                <th>Location / Type</th>
+                <th>Applicants</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminJobsTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================= -->
+  <!-- MODALS -->
+  <!-- ======================================================= -->
+
+  <!-- 1. Authentication Modal -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-container" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="authModalTitle">Sign In</h3>
+        <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; background:var(--slate-100); border-radius:var(--radius-md); padding:0.25rem; margin-bottom:0.5rem;">
+          <button id="authTabLogin" class="btn btn-sm" style="flex:1; background:var(--white);" onclick="setAuthMode('login')">Sign In</button>
+          <button id="authTabRegister" class="btn btn-sm" style="flex:1; background:transparent;" onclick="setAuthMode('register')">Create Account</button>
+        </div>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+          <!-- Register Only Fields -->
+          <div id="registerFields" style="display:none; flex-direction:column; gap:1rem; margin-bottom:1rem;">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="authFullName" class="form-input" placeholder="e.g. Alex Morgan">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Account Role</label>
+              <select id="authRole" class="form-select" onchange="toggleCompanyField()">
+                <option value="applicant">Job Seeker / Applicant</option>
+                <option value="admin">Employer / Admin (Post Jobs & Review)</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="companyFieldGroup" style="display:none;">
+              <label class="form-label">Company Name</label>
+              <input type="text" id="authCompany" class="form-input" placeholder="e.g. Acme Innovations">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="name@domain.com" required>
+          </div>
+
+          <div class="form-group" style="margin-top:0.75rem;">
+            <label class="form-label">Password</label>
+            <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+
+          <div id="authErrorNotice" style="color:var(--danger-text); font-size:0.85rem; margin-top:0.75rem; display:none;"></div>
+
+          <button type="submit" class="btn btn-primary" id="authSubmitBtn" style="width:100%; margin-top:1.25rem;">
+            Sign In
+          </button>
+        </form>
+
+        <div style="border-top:1px solid var(--slate-200); padding-top:1rem; margin-top:0.5rem;">
+          <p style="font-size:0.8rem; color:var(--slate-500); text-align:center; margin-bottom:0.5rem;">Try instant demo accounts:</p>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="quickLogin('admin@jobtrack.com', 'Admin123!')">
+              Admin Demo
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" style="flex:1;" onclick="quickLogin('applicant@example.com', 'User123!')">
+              Applicant Demo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Job Details Modal -->
+  <div class="modal-backdrop" id="jobDetailModal">
+    <div class="modal-container" style="max-width: 720px;">
+      <div class="modal-header">
+        <div>
+          <span class="status-badge open" id="detailJobBadge" style="margin-bottom:0.25rem;">Open</span>
+          <h3 class="modal-title" id="detailJobTitle">Job Details</h3>
+          <div id="detailJobMeta" style="font-size:0.85rem; color:var(--slate-500);"></div>
+        </div>
+        <button class="modal-close" onclick="closeJobDetailModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="job-meta-pills" id="detailPills"></div>
+
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:700; color:var(--slate-800); margin-bottom:0.5rem;">About the Role</h4>
+          <div id="detailJobDescription" style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; white-space:pre-line;"></div>
+        </div>
+
+        <div id="detailRequirementsSection">
+          <h4 style="font-size:0.95rem; font-weight:700; color:var(--slate-800); margin-bottom:0.5rem;">Requirements & Qualifications</h4>
+          <div id="detailJobRequirements" style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; white-space:pre-line;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeJobDetailModal()">Close</button>
+        <button class="btn btn-primary" id="detailApplyBtn" onclick="proceedToApply()">
+          Apply for this Position
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Job Application Submission Modal -->
+  <div class="modal-backdrop" id="applyModal">
+    <div class="modal-container" style="max-width: 620px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Submit Your Application</h3>
+          <p id="applyModalSub" style="font-size:0.85rem; color:var(--slate-500);"></p>
+        </div>
+        <button class="modal-close" onclick="closeApplyModal()">&times;</button>
+      </div>
+
+      <form id="applyForm" onsubmit="submitApplication(event)">
+        <div class="modal-body">
+          <input type="hidden" id="applyJobId">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="applyFullName" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="applyEmail" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" id="applyPhone" class="form-input" placeholder="+1 (555) 000-0000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Portfolio / LinkedIn URL</label>
+              <input type="url" id="applyPortfolio" class="form-input" placeholder="https://linkedin.com/in/username">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Resume / CV (PDF, DOCX, TXT)</label>
+            <div class="file-dropzone" id="resumeDropzone">
+              <input type="file" id="applyResume" accept=".pdf,.doc,.docx,.txt" onchange="handleResumeSelected(event)">
+              <div class="file-dropzone-icon">
+                <i data-lucide="upload-cloud" style="width:32px;height:32px;"></i>
+              </div>
+              <div style="font-weight:600; font-size:0.9rem; color:var(--primary);" id="resumeUploadLabel">
+                Click to browse or drop your resume file
+              </div>
+              <div style="font-size:0.75rem; color:var(--slate-400); margin-top:0.25rem;">
+                Supported: PDF, DOCX, TXT (up to 10MB)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cover Letter / Note</label>
+            <textarea id="applyCoverLetter" class="form-textarea" placeholder="Tell the hiring manager why you are a great match for this position..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeApplyModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitAppBtn">
+            <i data-lucide="send" style="width:16px;height:16px;"></i> Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Post / Edit Job Modal (Admin) -->
+  <div class="modal-backdrop" id="jobFormModal">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="jobFormTitle">Post New Job Opening</h3>
+        <button class="modal-close" onclick="closeJobFormModal()">&times;</button>
+      </div>
+
+      <form id="jobForm" onsubmit="saveJobOpening(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editJobId">
+
+          <div class="form-group">
+            <label class="form-label">Job Title *</label>
+            <input type="text" id="jobInputTitle" class="form-input" placeholder="e.g. Senior Frontend Engineer" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Department *</label>
+              <input type="text" id="jobInputDept" class="form-input" placeholder="e.g. Engineering, Design, Sales" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location *</label>
+              <input type="text" id="jobInputLocation" class="form-input" placeholder="e.g. Remote, San Francisco, CA" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Employment Type</label>
+              <select id="jobInputType" class="form-select">
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Remote">Remote</option>
+                <option value="Contract">Contract</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Experience Level</label>
+              <select id="jobInputExp" class="form-select">
+                <option value="Entry Level">Entry Level</option>
+                <option value="Mid Level" selected>Mid Level</option>
+                <option value="Senior">Senior</option>
+                <option value="Lead">Lead</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Salary Range</label>
+              <input type="text" id="jobInputSalary" class="form-input" placeholder="e.g. $100,000 - $130,000 / yr">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Posting Status</label>
+              <select id="jobInputStatus" class="form-select">
+                <option value="Open">Open (Accepting Applications)</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Job Description & Responsibilities *</label>
+            <textarea id="jobInputDesc" class="form-textarea" placeholder="Detail the day-to-day role responsibilities, team mission, and impact..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Requirements & Qualifications</label>
+            <textarea id="jobInputReqs" class="form-textarea" placeholder="Required qualifications, programming languages, years of experience, or preferred certifications..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeJobFormModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveJobBtn">
+            <i data-lucide="check" style="width:16px;height:16px;"></i> Publish Job Opening
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Admin Candidate Review Modal -->
+  <div class="modal-backdrop" id="candidateReviewModal">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="reviewCandidateName">Candidate Application</h3>
+          <p id="reviewCandidateJob" style="font-size:0.85rem; color:var(--slate-500);"></p>
+        </div>
+        <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="reviewAppId">
+
+        <div style="background:var(--slate-50); border:1px solid var(--slate-200); border-radius:var(--radius-md); padding:1rem;">
+          <div class="form-row" style="margin-bottom:0.5rem;">
+            <div>
+              <span style="font-size:0.75rem; color:var(--slate-400); text-transform:uppercase; font-weight:700;">Email</span>
+              <div id="reviewEmail" style="font-weight:600; font-size:0.9rem;"></div>
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--slate-400); text-transform:uppercase; font-weight:700;">Phone</span>
+              <div id="reviewPhone" style="font-weight:600; font-size:0.9rem;"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <span style="font-size:0.75rem; color:var(--slate-400); text-transform:uppercase; font-weight:700;">Portfolio / Link</span>
+              <div id="reviewPortfolio" style="font-size:0.9rem;"></div>
+            </div>
+            <div>
+              <span style="font-size:0.75rem; color:var(--slate-400); text-transform:uppercase; font-weight:700;">Resume File</span>
+              <div id="reviewResumeBtn"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label">Cover Letter / Candidate Pitch</label>
+          <div id="reviewCoverLetter" style="background:var(--white); border:1px solid var(--slate-200); border-radius:var(--radius-md); padding:0.85rem; font-size:0.9rem; color:var(--slate-700); min-height:80px; white-space:pre-line;">
+          </div>
+        </div>
+
+        <div class="form-group" style="border-top:1px solid var(--slate-200); padding-top:1rem;">
+          <label class="form-label">Update ATS Stage / Status</label>
+          <select id="reviewStatusSelect" class="form-select">
+            <option value="Submitted">Submitted</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Interview Scheduled">Interview Scheduled</option>
+            <option value="Offer Extended">Offer Extended</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hiring Team Notes (Internal)</label>
+          <textarea id="reviewAdminNotes" class="form-textarea" placeholder="Add screening feedback, interview notes, or rationale..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveApplicationEvaluation()">
+          <i data-lucide="save" style="width:16px;height:16px;"></i> Update Candidate Status
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Application Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>
+
